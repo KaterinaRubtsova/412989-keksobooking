@@ -104,19 +104,32 @@ var generateCards = function () {
   return cards;
 };
 
+// var getHouseType = function (type) {
+//   if (type === 'palace') {
+//     return 'Дворец';
+//   } else if (type === 'flat') {
+//     return 'Квартира';
+//   } else if (type === 'house') {
+//     return 'Дом';
+//   } else if (type === 'bungalo') {
+//     return 'Бунгало';
+//   } else {
+//     return 'Неизвестно';
+//   }
+// };
+
+// вариант с объектом
 var getHouseType = function (type) {
-  if (type === 'palace') {
-    return 'Дворец';
-  } else if (type === 'flat') {
-    return 'Квартира';
-  } else if (type === 'house') {
-    return 'Дом';
-  } else if (type === 'bungalo') {
-    return 'Бунгало';
-  } else {
-    return 'Неизвестно';
+  var houseTypes = {
+    'palace': 'Дворец',
+    'flat': 'Квартира',
+    'house': 'Дом',
+    'bungalo': 'Бунгало',
+    'default': 'Неизвестно'
   }
+  return houseTypes[type];
 };
+
 
 var cards = generateCards();
 
@@ -158,7 +171,11 @@ var featuresList = cardClone.querySelector('.popup__features');
 var featuresListItemTemplate = featuresList.querySelector('.popup__feature--wifi').cloneNode(false); // насколько универсально
 featuresListItemTemplate.classList.remove('popup__feature--wifi');
 
-featuresList.innerHTML = ''; // TODO: разобраться как сделать правильно
+//featuresList.innerHTML = ''; // убрала innerHTML
+
+ while (featuresList.hasChildNodes()) {
+   featuresList.removeChild(featuresList.firstChild);
+ }
 
 for (i = 0; i < cards[0].offer.features.length; i++) {
   var listElement = featuresListItemTemplate.cloneNode(false);
@@ -172,7 +189,11 @@ var photosList = cardClone.querySelector('.popup__photos');
 
 var photosListItemTemplate = photosList.querySelector('.popup__photo').cloneNode(false);
 
-photosList.innerHTML = ''; // TODO: разобраться как сделать правильно
+//photosList.innerHTML = ''; // убрала innerHTML
+
+while (photosList.hasChildNodes()) {
+  photosList.removeChild(photosList.firstChild);
+}
 
 for (i = 0; i < cards[0].offer.photos.length; i++) {
   var photosListElement = photosListItemTemplate.cloneNode(false);
