@@ -48,9 +48,16 @@ var HOUSE_PHOTOS = [
 
 var CARDS_COUNT = 8;
 
-// размер пина взят из style.css
-var PIN_WIDTH = 50;
-var PIN_HEIGHT = 70;
+// размер пина взят из style.css для класса .map__pin--main строка 224
+var PIN_WIDTH = 65;
+var PIN_HEIGHT = 65;
+var PIN_TIP_HEIGHT = 22;
+
+// переменные для пинов, карты, формы
+var userMap = document.querySelector('.map');
+var mapPinMain = document.querySelector('.map__pin--main');
+var adForm = document.querySelector('.ad-form');
+var adFormFieldset = adForm.querySelectorAll('fieldset');
 
 var getRandomNumber = function (min, max) {
   return Math.floor(min + Math.random() * (max - min));
@@ -104,7 +111,6 @@ var generateCards = function () {
   return cards;
 };
 
-
 var getHouseType = function (type) {
   var houseTypes = {
     'palace': 'Дворец',
@@ -115,77 +121,150 @@ var getHouseType = function (type) {
   return houseTypes[type];
 };
 
-
 var cards = generateCards();
 
-var userMap = document.querySelector('.map');
-userMap.classList.remove('map--faded');
-
 var pinTemplate = document.querySelector('template').content.querySelector('.map__pin');
-
-var pinFragment = document.createDocumentFragment();
-
-for (var i = 0; i < CARDS_COUNT; i++) {
-  var pinClone = pinTemplate.cloneNode(true);
-  pinClone.style = 'left: ' + (cards[i].location.x - (PIN_WIDTH / 2)) + 'px;' + 'top: ' + (cards[i].location.y - (PIN_HEIGHT / 2)) + 'px';
-  pinClone.querySelector('img').src = cards[i].author.avatar;
-  pinClone.querySelector('img').alt = cards[i].offer.title;
-
-  pinFragment.appendChild(pinClone);
-}
-
-document.querySelector('.map__pins').appendChild(pinFragment);
-
 var cardTemplate = document.querySelector('template').content.querySelector('.map__card');
 
-var cardFragment = document.createDocumentFragment();
+// обернула ранее написанный код в функцию, чтобы было удобнее работать с обработчиком событий при переводе страницы в активное состояние
+var renderPins = function () {
+  var pinFragment = document.createDocumentFragment();
 
-var cardClone = cardTemplate.cloneNode(true);
+  for (var i = 0; i < CARDS_COUNT; i++) {
+    var pinClone = pinTemplate.cloneNode(true);
+    pinClone.style = 'left: ' + (cards[i].location.x - (PIN_WIDTH / 2)) + 'px;' + 'top: ' + (cards[i].location.y - (PIN_HEIGHT / 2)) + 'px';
+    pinClone.querySelector('img').src = cards[i].author.avatar;
+    pinClone.querySelector('img').alt = cards[i].offer.title;
+    pinClone.id = '#cid' + i;
+    pinClone.addEventListener('click', function (evt) {
+      renderCard(evt.currentTarget.id.substring(4, 5));
+    });
+    pinFragment.appendChild(pinClone);
+  }
 
-cardClone.querySelector('.popup__title').textContent = cards[0].offer.title;
-cardClone.querySelector('.popup__text--address').textContent = cards[0].offer.address;
-cardClone.querySelector('.popup__text--price').textContent = cards[0].offer.price + ' ₽/ночь';
-cardClone.querySelector('.popup__type').textContent = getHouseType(cards[0].offer.type);
-cardClone.querySelector('.popup__text--capacity').textContent = cards[0].offer.rooms + ' комнаты для ' + cards[0].offer.guests + ' гостей';
-cardClone.querySelector('.popup__text--time').textContent = 'Заезд после ' + cards[0].offer.checkin + ', выезд до ' + cards[0].offer.checkout;
-// В список .popup__features выведите все доступные удобства в объявлении.
-// cardClone.querySelector('.popup__features').
+  document.querySelector('.map__pins').appendChild(pinFragment);
+};
 
-var featuresList = cardClone.querySelector('.popup__features');
+var renderCard = function (cardIndex) {
+  var cardFragment = document.createDocumentFragment();
 
-var featuresListItemTemplate = featuresList.querySelector('.popup__feature--wifi').cloneNode(false); // насколько универсально
-featuresListItemTemplate.classList.remove('popup__feature--wifi');
+  var cardClone = cardTemplate.cloneNode(true);
 
+  cardClone.querySelector('.popup__title').textContent = cards[cardIndex].offer.title;
+  cardClone.querySelector('.popup__text--address').textContent = cards[cardIndex].offer.address;
+  cardClone.querySelector('.popup__text--price').textContent = cards[cardIndex].offer.price + ' ₽/ночь';
+  cardClone.querySelector('.popup__type').textContent = getHouseType(cards[cardIndex].offer.type);
+  cardClone.querySelector('.popup__text--capacity').textContent = cards[cardIndex].offer.rooms + ' комнаты для ' + cards[cardIndex].offer.guests + ' гостей';
+  cardClone.querySelector('.popup__text--time').textContent = 'Заезд после ' + cards[cardIndex].offer.checkin + ', выезд до ' + cards[cardIndex].offer.checkout;
 
-while (featuresList.hasChildNodes()) {
-  featuresList.removeChild(featuresList.firstChild);
-}
+  var featuresList = cardClone.querySelector('.popup__features');
 
-for (i = 0; i < cards[0].offer.features.length; i++) {
-  var listElement = featuresListItemTemplate.cloneNode(false);
-  listElement.classList.add('popup__feature--' + cards[0].offer.features[i]);
-  featuresList.appendChild(listElement);
-}
+  var featuresListItemTemplate = featuresList.querySelector('.popup__feature--wifi').cloneNode(false); // насколько универсально
+  featuresListItemTemplate.classList.remove('popup__feature--wifi');
 
-cardClone.querySelector('.popup__description').textContent = cards[0].offer.description;
+  while (featuresList.hasChildNodes()) {
+    featuresList.removeChild(featuresList.firstChild);
+  }
 
-var photosList = cardClone.querySelector('.popup__photos');
+  for (var i = 0; i < cards[cardIndex].offer.features.length; i++) {
+    var listElement = featuresListItemTemplate.cloneNode(false);
+    listElement.classList.add('popup__feature--' + cards[cardIndex].offer.features[i]);
+    featuresList.appendChild(listElement);
+  }
 
-var photosListItemTemplate = photosList.querySelector('.popup__photo').cloneNode(false);
+  cardClone.querySelector('.popup__description').textContent = cards[cardIndex].offer.description;
 
+  var photosList = cardClone.querySelector('.popup__photos');
 
-while (photosList.hasChildNodes()) {
-  photosList.removeChild(photosList.firstChild);
-}
+  var photosListItemTemplate = photosList.querySelector('.popup__photo').cloneNode(false);
 
-for (i = 0; i < cards[0].offer.photos.length; i++) {
-  var photosListElement = photosListItemTemplate.cloneNode(false);
-  photosListElement.src = cards[0].offer.photos[i];
-  photosList.appendChild(photosListElement);
-}
+  while (photosList.hasChildNodes()) {
+    photosList.removeChild(photosList.firstChild);
+  }
 
-cardClone.querySelector('.popup__avatar').src = cards[0].author.avatar;
+  for (i = 0; i < cards[cardIndex].offer.photos.length; i++) {
+    var photosListElement = photosListItemTemplate.cloneNode(false);
+    photosListElement.src = cards[cardIndex].offer.photos[i];
+    photosList.appendChild(photosListElement);
+  }
 
-cardFragment.appendChild(cardClone);
+  cardClone.querySelector('.popup__avatar').src = cards[cardIndex].author.avatar;
 
-userMap.insertBefore(cardFragment, document.querySelector('.map__filters-container'));
+  cardClone.querySelector('.popup__close').addEventListener('click', function () {
+    deletePopup();
+  });
+
+  cardFragment.appendChild(cardClone);
+
+  deletePopup();
+
+  userMap.insertBefore(cardFragment, document.querySelector('.map__filters-container'));
+};
+
+var deletePopup = function () {
+  if (userMap.querySelector('.popup') !== null) {
+    userMap.querySelector('.popup').remove();
+  }
+};
+
+// ------- module4-task1 ----------------------------------------------------- //
+
+// блок с картой находится в неактивном состоянии, форма подачи заявления заблокирована
+
+// toggle ( String [, Boolean])
+// Когда вторым параметром передано false - удаляет указанный класс, а если true - добавляет.
+
+var toggleDisabledForm = function (formDisabled) {
+  adForm.classList.toggle('ad-form--disabled', formDisabled);
+  for (var i = 0; i < adFormFieldset.length; i++) {
+    adFormFieldset[i].disabled = formDisabled;
+  }
+};
+
+var toggleDisabledMap = function (mapFaded) {
+  userMap.classList.toggle('map--faded', mapFaded);
+};
+
+// перемещение метки приводит к заполнению поля адреса
+// В значении поля записаны координаты, на которые метка указывает своим острым концом
+// в обработчике события mouseup на элементе метки, кроме вызова метода, переводящего страницу в активное состояние,
+// должен находиться вызов метода, который устанавливает значения поля ввода адреса/
+// поле адреса должно быть заполнено всегда, в том числе сразу после открытия страницы
+// в неактивном режиме страницы метка круглая, поэтому мы можем взять за исходное значение поля адреса середину метки
+// при «перетаскивании» значение поля изменится на то, на которое будет указывать острый конец метки
+
+var getMainPinCords = function () {
+  var mainPinX = parseInt(mapPinMain.style.left, 10) + (PIN_WIDTH / 2);
+  var mainPinY = parseInt(mapPinMain.style.top, 10) + (PIN_HEIGHT / 2);
+
+  if (!userMap.classList.contains('map--faded')) {
+    mainPinY += (PIN_HEIGHT / 2) + PIN_TIP_HEIGHT;
+  }
+
+  return Math.floor(mainPinX) + ', ' + Math.floor(mainPinY);
+};
+
+var inputLocation = adForm.querySelector('input[name="address"]');
+
+var fillAddress = function () {
+  inputLocation.value = getMainPinCords();
+};
+
+fillAddress();
+
+// Единственное доступное действие в неактивном состоянии — перетаскивание метки .map__pin--main,
+// являющейся контролом указания адреса объявления.
+// Первое перемещение метки переводит страницу в активное состояние
+
+var mapPinMainClickHandler = function () {
+  toggleDisabledForm(false);
+  toggleDisabledMap(false);
+  fillAddress();
+  renderPins();
+  mapPinMain.removeEventListener('mouseup', mapPinMainClickHandler);
+};
+
+mapPinMain.addEventListener('mouseup', mapPinMainClickHandler);
+
+toggleDisabledForm(true);
+toggleDisabledMap(true);
