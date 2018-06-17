@@ -79,9 +79,9 @@ var getRandomSubArray = function (arr, count) {
   return result;
 };
 
-var generateCards = function () {
+var generateCards = function (cardsAmount) {
   var cards = [];
-  for (var i = 0; i < CARDS_COUNT; i++) {
+  for (var i = 0; i < cardsAmount; i++) {
     var randomX = getRandomNumber(300, 900);
     var randomY = getRandomNumber(130, 630);
     var card = {
@@ -121,16 +121,16 @@ var getHouseType = function (type) {
   return houseTypes[type];
 };
 
-var cards = generateCards();
+var cards = generateCards(CARDS_COUNT);
 
 var pinTemplate = document.querySelector('template').content.querySelector('.map__pin');
 var cardTemplate = document.querySelector('template').content.querySelector('.map__card');
 
 // обернула ранее написанный код в функцию, чтобы было удобнее работать с обработчиком событий при переводе страницы в активное состояние
-var renderPins = function () {
+var renderPins = function (pinsAmount) {
   var pinFragment = document.createDocumentFragment();
 
-  for (var i = 0; i < CARDS_COUNT; i++) {
+  for (var i = 0; i < pinsAmount; i++) {
     var pinClone = pinTemplate.cloneNode(true);
     pinClone.style = 'left: ' + (cards[i].location.x - (PIN_WIDTH / 2)) + 'px;' + 'top: ' + (cards[i].location.y - (PIN_HEIGHT / 2)) + 'px';
     pinClone.querySelector('img').src = cards[i].author.avatar;
@@ -150,12 +150,14 @@ var renderCard = function (cardIndex) {
 
   var cardClone = cardTemplate.cloneNode(true);
 
-  cardClone.querySelector('.popup__title').textContent = cards[cardIndex].offer.title;
-  cardClone.querySelector('.popup__text--address').textContent = cards[cardIndex].offer.address;
-  cardClone.querySelector('.popup__text--price').textContent = cards[cardIndex].offer.price + ' ₽/ночь';
-  cardClone.querySelector('.popup__type').textContent = getHouseType(cards[cardIndex].offer.type);
-  cardClone.querySelector('.popup__text--capacity').textContent = cards[cardIndex].offer.rooms + ' комнаты для ' + cards[cardIndex].offer.guests + ' гостей';
-  cardClone.querySelector('.popup__text--time').textContent = 'Заезд после ' + cards[cardIndex].offer.checkin + ', выезд до ' + cards[cardIndex].offer.checkout;
+  var cardOffer = cards[cardIndex].offer;
+
+  cardClone.querySelector('.popup__title').textContent = cardOffer.title;
+  cardClone.querySelector('.popup__text--address').textContent = cardOffer.address;
+  cardClone.querySelector('.popup__text--price').textContent = cardOffer.price + ' ₽/ночь';
+  cardClone.querySelector('.popup__type').textContent = getHouseType(cardOffer.type);
+  cardClone.querySelector('.popup__text--capacity').textContent = cardOffer.rooms + ' комнаты для ' + cardOffer.guests + ' гостей';
+  cardClone.querySelector('.popup__text--time').textContent = 'Заезд после ' + cardOffer.checkin + ', выезд до ' + cardOffer.checkout;
 
   var featuresList = cardClone.querySelector('.popup__features');
 
@@ -166,13 +168,13 @@ var renderCard = function (cardIndex) {
     featuresList.removeChild(featuresList.firstChild);
   }
 
-  for (var i = 0; i < cards[cardIndex].offer.features.length; i++) {
+  for (var i = 0; i < cardOffer.features.length; i++) {
     var listElement = featuresListItemTemplate.cloneNode(false);
-    listElement.classList.add('popup__feature--' + cards[cardIndex].offer.features[i]);
+    listElement.classList.add('popup__feature--' + cardOffer.features[i]);
     featuresList.appendChild(listElement);
   }
 
-  cardClone.querySelector('.popup__description').textContent = cards[cardIndex].offer.description;
+  cardClone.querySelector('.popup__description').textContent = cardOffer.description;
 
   var photosList = cardClone.querySelector('.popup__photos');
 
@@ -182,9 +184,9 @@ var renderCard = function (cardIndex) {
     photosList.removeChild(photosList.firstChild);
   }
 
-  for (i = 0; i < cards[cardIndex].offer.photos.length; i++) {
+  for (i = 0; i < cardOffer.photos.length; i++) {
     var photosListElement = photosListItemTemplate.cloneNode(false);
-    photosListElement.src = cards[cardIndex].offer.photos[i];
+    photosListElement.src = cardOffer.photos[i];
     photosList.appendChild(photosListElement);
   }
 
@@ -202,7 +204,7 @@ var renderCard = function (cardIndex) {
 };
 
 var deletePopup = function () {
-  if (userMap.querySelector('.popup') !== null) {
+  if (userMap.querySelector('.popup')) {
     userMap.querySelector('.popup').remove();
   }
 };
@@ -260,7 +262,7 @@ var mapPinMainClickHandler = function () {
   toggleDisabledForm(false);
   toggleDisabledMap(false);
   fillAddress();
-  renderPins();
+  renderPins(CARDS_COUNT);
   mapPinMain.removeEventListener('mouseup', mapPinMainClickHandler);
 };
 
