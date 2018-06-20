@@ -1,6 +1,6 @@
 'use strict';
 // Создайте массив, состоящий из 8 сгенерированных JS объектов, которые будут описывать похожие объявления неподалёку
-// для начала объявляю переменные
+
 var HOUSE_TITLES = [
   'Большая уютная квартира',
   'Маленькая неуютная квартира',
@@ -10,13 +10,6 @@ var HOUSE_TITLES = [
   'Некрасивый негостеприимный домик',
   'Уютное бунгало далеко от моря',
   'Неуютное бунгало по колено в воде'
-];
-
-var HOUSE_TYPES = [
-  'palace',
-  'flat',
-  'house',
-  'bungalo'
 ];
 
 var HOUSE_CHECKIN_TIMES = [
@@ -53,6 +46,38 @@ var PIN_WIDTH = 65;
 var PIN_HEIGHT = 65;
 var PIN_TIP_HEIGHT = 22;
 
+var HOUSE_TYPES = [
+  {
+    'name': 'palace',
+    'desc': 'Дворец',
+    'minPrice': 10000
+  },
+  {
+    'name': 'house',
+    'desc': 'Дом',
+    'minPrice': 5000
+  },
+  {
+    'name': 'flat',
+    'desc': 'Квартира',
+    'minPrice': 1000
+  },
+  {
+    'name': 'bungalo',
+    'desc': 'Бунгало',
+    'minPrice': 0
+  }
+];
+
+var getMinPriceForHouseType = function (houseType) {
+  for (var i = 0; i < HOUSE_TYPES.length; i++) {
+    if (HOUSE_TYPES[i].name === houseType) {
+      return HOUSE_TYPES[i].minPrice;
+    }
+  }
+  return null;
+};
+
 // переменные для пинов, карты, формы
 var userMap = document.querySelector('.map');
 var mapPinMain = document.querySelector('.map__pin--main');
@@ -63,7 +88,7 @@ var getRandomNumber = function (min, max) {
   return Math.floor(min + Math.random() * (max - min));
 };
 
-var getRandomElem = function (arr) {
+var getRandomArrayElem = function (arr) {
   var randomElem = Math.floor(Math.random() * arr.length);
   return arr[randomElem];
 };
@@ -92,11 +117,11 @@ var generateCards = function (cardsAmount) {
         'title': HOUSE_TITLES[i],
         'address': '' + randomX + ', ' + randomY,
         'price': getRandomNumber(1000, 1000000),
-        'type': getRandomElem(HOUSE_TYPES),
+        'type': getRandomArrayElem(HOUSE_TYPES).name,
         'rooms': getRandomNumber(1, 5),
         'guests': getRandomNumber(1, 10),
-        'checkin': getRandomElem(HOUSE_CHECKIN_TIMES),
-        'checkout': getRandomElem(HOUSE_CHECKOUT_TIMES),
+        'checkin': getRandomArrayElem(HOUSE_CHECKIN_TIMES),
+        'checkout': getRandomArrayElem(HOUSE_CHECKOUT_TIMES),
         'features': getRandomSubArray(HOUSE_FEATURES, Math.floor(1 + Math.random() * HOUSE_FEATURES.length)),
         'description': '',
         'photos': getRandomSubArray(HOUSE_PHOTOS, HOUSE_PHOTOS.length)
@@ -268,5 +293,68 @@ var mapPinMainClickHandler = function () {
 
 mapPinMain.addEventListener('mouseup', mapPinMainClickHandler);
 
+
+// ------- module4-task2  ----------------------------------------------------- //
+
+
+// п. 2.5. ТЗ Поля «Время заезда» и «Время выезда» синхронизированы:
+// при изменении значения одного поля, во втором выделяется соответствующее ему.
+// Например, если время заезда указано «после 14», то время выезда будет равно «до 14» и наоборот
+
+var adFormTimeInField = adForm.querySelector('#timein');
+var adFormTimeOutField = adForm.querySelector('#timeout');
+
+var syncFormTimeFields = function (timeSrc, timeDst) {
+  timeDst.value = timeSrc.value;
+};
+
+adFormTimeInField.addEventListener('change', function () {
+  syncFormTimeFields(adFormTimeInField, adFormTimeOutField);
+});
+
+adFormTimeOutField.addEventListener('change', function () {
+  syncFormTimeFields(adFormTimeOutField, adFormTimeInField);
+});
+
+// Поле «Количество комнат» синхронизировано с полем «Количество мест» таким образом,
+// что при выборе количества комнат вводятся ограничения на допустимые варианты выбора количества гостей
+// 1 комната — «для 1 гостя»;   2 комнаты — «для 2 гостей» или «для 1 гостя»;
+// 3 комнаты — «для 3 гостей», «для 2 гостей» или «для 1 гостя»;
+// 100 комнат — «не для гостей»;
+var adFormRoomNumberField = adForm.querySelector('#room_number');
+var adFormCapacityField = adForm.querySelector('#capacity');
+
+var checkRoomCapacity = function () {
+  var roomNumber = parseInt(adFormRoomNumberField.value, 10);
+  var guestCount = parseInt(adFormCapacityField.value, 10);
+
+  if (roomNumber === 100 && guestCount > 0) {
+    adFormCapacityField.setCustomValidity('Доступно только не для гостей');
+  } else if (roomNumber < 100 && guestCount === 0) {
+    adFormCapacityField.setCustomValidity('Выберите количество гостей');
+  } else if (guestCount > roomNumber) {
+    adFormCapacityField.setCustomValidity('Максимум гостей: ' + roomNumber);
+  } else {
+    adFormCapacityField.setCustomValidity('');
+  }
+  adFormCapacityField.checkValidity();
+};
+
+adFormCapacityField.addEventListener('change', checkRoomCapacity);
+adFormRoomNumberField.addEventListener('change', checkRoomCapacity);
+
+var adFormPriceField = adForm.querySelector('#price');
+var adFormRoomTypeField = adForm.querySelector('#type');
+
+var changeFormMinPriceForHouseType = function () {
+  var minPrice = getMinPriceForHouseType(adFormRoomTypeField.value);
+  adFormPriceField.setAttribute('min', minPrice);
+  adFormPriceField.setAttribute('placeholder', minPrice);
+};
+
+adFormRoomTypeField.addEventListener('change', changeFormMinPriceForHouseType);
+
 toggleDisabledForm(true);
 toggleDisabledMap(true);
+changeFormMinPriceForHouseType();
+checkRoomCapacity();
