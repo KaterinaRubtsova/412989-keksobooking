@@ -377,10 +377,10 @@ var maxMapPinMainCoordinates = {
 };
 
 var calcMapPinMainCoordsToMove = function (offsetPin, shiftCoords, min, max) {
-  var MapPinMainCoordsToMove = offsetPin + shiftCoords;
-  MapPinMainCoordsToMove = MapPinMainCoordsToMove >= max ? max : MapPinMainCoordsToMove;
-  MapPinMainCoordsToMove = MapPinMainCoordsToMove <= min ? min : MapPinMainCoordsToMove;
-  return MapPinMainCoordsToMove;
+  var mapPinMainCoordsToMove = offsetPin + shiftCoords;
+  mapPinMainCoordsToMove = mapPinMainCoordsToMove >= max ? max : mapPinMainCoordsToMove;
+  mapPinMainCoordsToMove = mapPinMainCoordsToMove <= min ? min : mapPinMainCoordsToMove;
+  return mapPinMainCoordsToMove;
 };
 
 mapPinMain.addEventListener('mousedown', function (evt) {
