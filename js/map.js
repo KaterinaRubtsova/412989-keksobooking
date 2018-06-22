@@ -46,27 +46,26 @@ var PIN_WIDTH = 65;
 var PIN_HEIGHT = 65;
 var PIN_TIP_HEIGHT = 22;
 
-var HOUSE_TYPES = [
-  {
-    'name': 'palace',
-    'desc': 'Дворец',
-    'minPrice': 10000
-  },
-  {
-    'name': 'house',
-    'desc': 'Дом',
-    'minPrice': 5000
-  },
-  {
-    'name': 'flat',
-    'desc': 'Квартира',
-    'minPrice': 1000
-  },
-  {
-    'name': 'bungalo',
-    'desc': 'Бунгало',
-    'minPrice': 0
-  }
+var HOUSE_TYPES = [{
+  'name': 'palace',
+  'desc': 'Дворец',
+  'minPrice': 10000
+},
+{
+  'name': 'house',
+  'desc': 'Дом',
+  'minPrice': 5000
+},
+{
+  'name': 'flat',
+  'desc': 'Квартира',
+  'minPrice': 1000
+},
+{
+  'name': 'bungalo',
+  'desc': 'Бунгало',
+  'minPrice': 0
+}
 ];
 
 var getMinPriceForHouseType = function (houseType) {
@@ -83,6 +82,13 @@ var userMap = document.querySelector('.map');
 var mapPinMain = document.querySelector('.map__pin--main');
 var adForm = document.querySelector('.ad-form');
 var adFormFieldset = adForm.querySelectorAll('fieldset');
+
+// вспомогательные переменные для перемещения главного пина
+var MIN_VALUE_Y = 130;
+var MAX_VALUE_Y = 630;
+var MAX_VALUE_X = 1200;
+var MIN_VALUE_X = 0;
+
 
 var getRandomNumber = function (min, max) {
   return Math.floor(min + Math.random() * (max - min));
@@ -353,6 +359,70 @@ var changeFormMinPriceForHouseType = function () {
 };
 
 adFormRoomTypeField.addEventListener('change', changeFormMinPriceForHouseType);
+
+// ---------module5-task1--------------------
+
+// Чтобы метку невозможно было поставить выше горизонта или ниже панели фильтров,
+// значение координаты Y должно быть ограничено интервалом от 130 до 630.
+// Значение координаты X должно быть ограничено размерами блока, в котором перетаскивается метка.
+
+var minMapPinMainCoordinates = {
+  x: (MIN_VALUE_X),
+  y: (MIN_VALUE_Y - PIN_HEIGHT - PIN_TIP_HEIGHT)
+};
+
+var maxMapPinMainCoordinates = {
+  x: (MAX_VALUE_X - PIN_WIDTH),
+  y: (MAX_VALUE_Y - PIN_HEIGHT - PIN_TIP_HEIGHT)
+};
+
+var calcMapPinMainCoordsToMove = function (offsetPin, shiftCoords, min, max) {
+  var mapPinMainCoordsToMove = offsetPin + shiftCoords;
+  mapPinMainCoordsToMove = mapPinMainCoordsToMove >= max ? max : mapPinMainCoordsToMove;
+  mapPinMainCoordsToMove = mapPinMainCoordsToMove <= min ? min : mapPinMainCoordsToMove;
+  return mapPinMainCoordsToMove;
+};
+
+mapPinMain.addEventListener('mousedown', function (evt) {
+  evt.preventDefault();
+
+  // координаты точки, с которой начинается перемещение
+  var startCoords = {
+    x: evt.clientX,
+    y: evt.clientY
+  };
+
+  var mapPinMainMouseMoveHandler = function (moveEvt) {
+    moveEvt.preventDefault();
+
+    // смещение относительно изначальной точки
+    var shift = {
+      x: moveEvt.clientX - startCoords.x,
+      y: moveEvt.clientY - startCoords.y
+    };
+
+    startCoords = {
+      x: moveEvt.clientX,
+      y: moveEvt.clientY
+    };
+
+    mapPinMain.style.top = calcMapPinMainCoordsToMove(mapPinMain.offsetTop, shift.y, minMapPinMainCoordinates.y, maxMapPinMainCoordinates.y) + 'px';
+    mapPinMain.style.left = calcMapPinMainCoordsToMove(mapPinMain.offsetLeft, shift.x, minMapPinMainCoordinates.x, maxMapPinMainCoordinates.x) + 'px';
+    fillAddress();
+  };
+
+  var mapPinMainMouseUpHandler = function (upEvt) {
+    upEvt.preventDefault();
+    // при отпускании кнопки перестаем слушать события передвижения мыши и отпускания кнопки мыши
+    document.removeEventListener('mousemove', mapPinMainMouseMoveHandler);
+    document.removeEventListener('mouseup', mapPinMainMouseUpHandler);
+  };
+
+  //  обработчики события передвижения мыши и отпускания кнопки мыши.
+  document.addEventListener('mousemove', mapPinMainMouseMoveHandler);
+  document.addEventListener('mouseup', mapPinMainMouseUpHandler);
+});
+
 
 toggleDisabledForm(true);
 toggleDisabledMap(true);
