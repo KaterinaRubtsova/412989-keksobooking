@@ -3,17 +3,13 @@
 // модуль, который отвечает за создание карточки объявлений (удаление карточки объявлений)
 
 (function () {
-
   var cardTemplate = document.querySelector('template').content.querySelector('.map__card');
-
 
   var renderCard = function (cardIndex) {
     var cardFragment = document.createDocumentFragment();
 
     var cardClone = cardTemplate.cloneNode(true);
-
     var cardOffer = window.data.cards[cardIndex].offer;
-
     cardClone.querySelector('.popup__title').textContent = cardOffer.title;
     cardClone.querySelector('.popup__text--address').textContent = cardOffer.address;
     cardClone.querySelector('.popup__text--price').textContent = cardOffer.price + ' ₽/ночь';
