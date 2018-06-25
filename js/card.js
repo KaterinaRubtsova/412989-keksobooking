@@ -9,41 +9,43 @@
     var cardFragment = document.createDocumentFragment();
 
     var cardClone = cardTemplate.cloneNode(true);
+
+    var featuresList = cardClone.querySelector('.popup__features');
+    var featuresListItemTemplate = featuresList.querySelector('.popup__feature--wifi').cloneNode(false);
+    featuresListItemTemplate.classList.remove('popup__feature--wifi');
+
+    var photosList = cardClone.querySelector('.popup__photos');
+    var photosListItemTemplate = photosList.querySelector('.popup__photo').cloneNode(false);
+
+    var listElement;
+    var photosListElement;
+
     var cardOffer = window.data.cards[cardIndex].offer;
     cardClone.querySelector('.popup__title').textContent = cardOffer.title;
     cardClone.querySelector('.popup__text--address').textContent = cardOffer.address;
     cardClone.querySelector('.popup__text--price').textContent = cardOffer.price + ' ₽/ночь';
-    cardClone.querySelector('.popup__type').textContent = window.data.getHouseType(cardOffer.type);
+    cardClone.querySelector('.popup__type').textContent = window.utils.getHouseType(cardOffer.type);
     cardClone.querySelector('.popup__text--capacity').textContent = cardOffer.rooms + ' комнаты для ' + cardOffer.guests + ' гостей';
     cardClone.querySelector('.popup__text--time').textContent = 'Заезд после ' + cardOffer.checkin + ', выезд до ' + cardOffer.checkout;
-
-    var featuresList = cardClone.querySelector('.popup__features');
-
-    var featuresListItemTemplate = featuresList.querySelector('.popup__feature--wifi').cloneNode(false); // насколько универсально
-    featuresListItemTemplate.classList.remove('popup__feature--wifi');
 
     while (featuresList.hasChildNodes()) {
       featuresList.removeChild(featuresList.firstChild);
     }
 
     for (var i = 0; i < cardOffer.features.length; i++) {
-      var listElement = featuresListItemTemplate.cloneNode(false);
+      listElement = featuresListItemTemplate.cloneNode(false);
       listElement.classList.add('popup__feature--' + cardOffer.features[i]);
       featuresList.appendChild(listElement);
     }
 
     cardClone.querySelector('.popup__description').textContent = cardOffer.description;
 
-    var photosList = cardClone.querySelector('.popup__photos');
-
-    var photosListItemTemplate = photosList.querySelector('.popup__photo').cloneNode(false);
-
     while (photosList.hasChildNodes()) {
       photosList.removeChild(photosList.firstChild);
     }
 
     for (i = 0; i < cardOffer.photos.length; i++) {
-      var photosListElement = photosListItemTemplate.cloneNode(false);
+      photosListElement = photosListItemTemplate.cloneNode(false);
       photosListElement.src = cardOffer.photos[i];
       photosList.appendChild(photosListElement);
     }
