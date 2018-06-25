@@ -21,9 +21,30 @@
     return result;
   };
 
+  var getMinPriceForHouseType = function (houseType, houseTypes) {
+    for (var i = 0; i < houseTypes.length; i++) {
+      if (houseTypes[i].name === houseType) {
+        return houseTypes[i].minPrice;
+      }
+    }
+    return null;
+  };
+
+  var getHouseType = function (type) {
+    var houseTypes = {
+      'palace': 'Дворец',
+      'flat': 'Квартира',
+      'house': 'Дом',
+      'bungalo': 'Бунгало',
+    };
+    return houseTypes[type];
+  };
+
   window.utils = {
     getRandomNumber: getRandomNumber,
     getRandomArrayElem: getRandomArrayElem,
-    getRandomSubArray: getRandomSubArray
+    getRandomSubArray: getRandomSubArray,
+    getMinPriceForHouseType: getMinPriceForHouseType,
+    getHouseType: getHouseType
   };
 })();

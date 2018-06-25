@@ -4,6 +4,11 @@
 (function () {
   var adForm = document.querySelector('.ad-form');
   var adFormFieldset = adForm.querySelectorAll('fieldset');
+  var inputLocation = adForm.querySelector('input[name="address"]');
+  var adFormTimeInField = adForm.querySelector('#timein');
+  var adFormTimeOutField = adForm.querySelector('#timeout');
+  var adFormRoomNumberField = adForm.querySelector('#room_number');
+  var adFormCapacityField = adForm.querySelector('#capacity');
 
   // блок с картой находится в неактивном состоянии, форма подачи заявления заблокирована
   var toggleDisabledForm = function (formDisabled) {
@@ -12,7 +17,6 @@
       adFormFieldset[i].disabled = formDisabled;
     }
   };
-  var inputLocation = adForm.querySelector('input[name="address"]');
 
   var fillAddress = function () {
     inputLocation.value = window.map.getMainPinCords();
@@ -23,10 +27,6 @@
   // п. 2.5. ТЗ Поля «Время заезда» и «Время выезда» синхронизированы:
   // при изменении значения одного поля, во втором выделяется соответствующее ему.
   // Например, если время заезда указано «после 14», то время выезда будет равно «до 14» и наоборот
-
-  var adFormTimeInField = adForm.querySelector('#timein');
-  var adFormTimeOutField = adForm.querySelector('#timeout');
-
   var syncFormTimeFields = function (timeSrc, timeDst) {
     timeDst.value = timeSrc.value;
   };
@@ -44,9 +44,6 @@
   // 1 комната — «для 1 гостя»;   2 комнаты — «для 2 гостей» или «для 1 гостя»;
   // 3 комнаты — «для 3 гостей», «для 2 гостей» или «для 1 гостя»;
   // 100 комнат — «не для гостей»;
-  var adFormRoomNumberField = adForm.querySelector('#room_number');
-  var adFormCapacityField = adForm.querySelector('#capacity');
-
   var checkRoomCapacity = function () {
     var roomNumber = parseInt(adFormRoomNumberField.value, 10);
     var guestCount = parseInt(adFormCapacityField.value, 10);
@@ -70,7 +67,7 @@
   var adFormRoomTypeField = adForm.querySelector('#type');
 
   var changeFormMinPriceForHouseType = function () {
-    var minPrice = window.data.getMinPriceForHouseType(adFormRoomTypeField.value);
+    var minPrice = window.utils.getMinPriceForHouseType(adFormRoomTypeField.value, window.data.allHouseTypes);
     adFormPriceField.setAttribute('min', minPrice);
     adFormPriceField.setAttribute('placeholder', minPrice);
   };
